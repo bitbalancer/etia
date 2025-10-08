@@ -56,18 +56,25 @@ def adjset_pcalg(graph_pd, graph_type, x, y, r_path='R'):
 
     r_path = r_path
     path_ = os.path.dirname(__file__)
-    graph_name='graph_r.csv'
-    graph_pd.to_csv(graph_name)
+    graph_name = 'graph_r.csv'
+    graph_path = os.path.join(path_, graph_name)
+    graph_pd.to_csv(graph_path)
 
-    subprocess.call([r_path, '--vanilla', os.path.join(path_, 'run_adjset_pcalg_r.R'),
-                     graph_name, graph_type, str(x), str(y)], shell=True)
+    subprocess.run(
+        [r_path, '--vanilla', 'run_adjset_pcalg_r.R',
+         graph_name, graph_type, str(x), str(y)],
+        cwd=path_,
+        check=True
+    )
 
     canonical_set = read_adjset('canonical_pcalg.csv', path_)
     minimal_set = read_adjset('minimal_pcalg.csv', path_)
 
     # r indexing --> we need to subtract 1
-    canonical_set = [[value - 1 for value in sublist] for sublist in canonical_set]
-    minimal_set = [[value - 1 for value in sublist] for sublist in minimal_set]
+    if canonical_set is not None:
+        canonical_set = [[value - 1 for value in sublist] for sublist in canonical_set]
+    if minimal_set is not None:
+        minimal_set = [[value - 1 for value in sublist] for sublist in minimal_set]
 
     return canonical_set, minimal_set
 
@@ -102,8 +109,12 @@ def adjset_dagitty(graph_pd, graph_type, x_name, y_name, r_path='R'):
     x_names_pd.to_csv(os.path.join(path_, exp_name))
     y_names_pd.to_csv(os.path.join(path_, out_name))
 
-    subprocess.call([r_path, '--vanilla', os.path.join(path_, 'run_adjset_dagitty_r.R'),
-                     graph_name, graph_type, exp_name , out_name],shell=True)
+    subprocess.run(
+        [r_path, '--vanilla', 'run_adjset_dagitty_r.R',
+         graph_name, graph_type, exp_name, out_name],
+        cwd=path_,
+        check=True
+    )
 
     canonical_set = read_adjset('canonical_dagitty.csv', path_)
     minimal_set = read_adjset('minimal_dagitty.csv',path_)
