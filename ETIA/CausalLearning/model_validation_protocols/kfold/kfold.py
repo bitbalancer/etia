@@ -128,6 +128,8 @@ class KFoldCV(MVP_ProtocolBase):
             delayed(self.run_cd_algorithm)(data, algorithm, parameters, fold)
             for fold in range(self.folds_to_run)
         )
-        results = np.array(results)
+        # Ensure numpy treats the heterogeneous fold outputs as plain objects
+        # to avoid ragged-array VisibleDeprecationWarning noise during tests.
+        results = np.array(results, dtype=object)
 
         return [results[:, 0], results[:, 1], results[:, 2]]
