@@ -3,7 +3,7 @@ library("pcalg")
 
 
 cur_path = getwd()
-dirname_= dirname(cur_path)
+dirname_ = dirname(cur_path)
 new_path = file.path(dirname_, 'adjustment')
 setwd(new_path)
 
@@ -12,6 +12,15 @@ graph_file_name <- args[1]
 graph_type <-args[2]
 exposure_file_name <- args[3]
 outcome_file_name <- args[4]
+output_dir_arg <- if (length(args) >= 5) args[5] else ''
+
+output_path <- output_dir_arg
+if (output_path == '') {
+  output_path <- file.path(new_path, '_adjset_tmp')
+}
+if (!dir.exists(output_path)) {
+  dir.create(output_path, recursive = TRUE, showWarnings = FALSE)
+}
 
 
 graph=as.matrix(read.table(graph_file_name,  header = TRUE, row.names = 1, sep=','))
@@ -38,8 +47,8 @@ minimal <- dagitty::adjustmentSets(g, exposure = exposures,
 canonical_res <- unclass(canonical)
 minimal_res <- unclass(minimal)
 
-canonical_name = 'canonical_dagitty.csv'
-minimal_name = 'minimal_dagitty.csv'
+canonical_name = file.path(output_path, 'canonical_dagitty.csv')
+minimal_name = file.path(output_path, 'minimal_dagitty.csv')
 
 
 # to be consistent with pcalg csv results

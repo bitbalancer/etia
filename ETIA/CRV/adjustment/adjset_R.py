@@ -1,7 +1,9 @@
-import pandas as pd
-import numpy as np
-import subprocess
 import os
+import subprocess
+import tempfile
+
+import numpy as np
+import pandas as pd
 
 def read_adjset(csv_name, path_):
 
@@ -97,27 +99,29 @@ def adjset_dagitty(graph_pd, graph_type, x_name, y_name, r_path='R'):
     '''
 
     r_path = r_path
-    path_ = os.path.dirname(__file__)
+    module_dir = os.path.dirname(__file__)
 
-    graph_name = 'graph_r.csv'
-    exp_name = 'exposures.csv'
-    out_name = 'outcomes.csv'
-    graph_pd.to_csv(os.path.join(path_, graph_name))
+    with tempfile.TemporaryDirectory(prefix='adjset_', dir=module_dir) as tmp_dir:
+        graph_name = os.path.join(tmp_dir, 'graph_r.csv')
+        exp_name = os.path.join(tmp_dir, 'exposures.csv')
+        out_name = os.path.join(tmp_dir, 'outcomes.csv')
 
-    x_names_pd = pd.DataFrame(np.array(x_name), columns=['x_names_dagitty'])
-    y_names_pd = pd.DataFrame(np.array(y_name), columns=['y_names_dagitty'])
-    x_names_pd.to_csv(os.path.join(path_, exp_name))
-    y_names_pd.to_csv(os.path.join(path_, out_name))
+        graph_pd.to_csv(graph_name)
 
-    subprocess.run(
-        [r_path, '--vanilla', 'run_adjset_dagitty_r.R',
-         graph_name, graph_type, exp_name, out_name],
-        cwd=path_,
-        check=True
-    )
+        x_names_pd = pd.DataFrame(np.array(x_name), columns=['x_names_dagitty'])
+        y_names_pd = pd.DataFrame(np.array(y_name), columns=['y_names_dagitty'])
+        x_names_pd.to_csv(exp_name)
+        y_names_pd.to_csv(out_name)
 
-    canonical_set = read_adjset('canonical_dagitty.csv', path_)
-    minimal_set = read_adjset('minimal_dagitty.csv',path_)
+        subprocess.run(
+            [r_path, '--vanilla', 'run_adjset_dagitty_r.R',
+             graph_name, graph_type, exp_name, out_name, tmp_dir],
+            cwd=module_dir,
+            check=True,
+        )
+
+        canonical_set = read_adjset('canonical_dagitty.csv', tmp_dir)
+        minimal_set = read_adjset('minimal_dagitty.csv', tmp_dir)
 
     # it returns variable names, not indexes
     return canonical_set, minimal_set
