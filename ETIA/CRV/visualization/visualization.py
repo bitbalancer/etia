@@ -199,7 +199,7 @@ class Visualization:
         """
         p4c.layout_network(layout_name, network=self.network_suid)
 
-    def export_to_png(self, file_path='network.png'):
+    def export_to_png(self, file_path='network.png', overwrite=True):
         """
         Exports the current network view to a PNG file.
 
@@ -212,7 +212,12 @@ class Visualization:
         -------
         None
         """
-        p4c.export_image(filename=file_path, type='PNG', network=self.network_suid)
+        p4c.export_image(
+            filename=file_path,
+            type='PNG',
+            network=self.network_suid,
+            overwrite_file=overwrite,
+        )
         print(f'Network exported to {file_path}')
 
 
