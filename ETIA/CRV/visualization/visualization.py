@@ -1,6 +1,7 @@
 import numpy as np
 import py4cytoscape as p4c
 from py4cytoscape import create_visual_style
+from py4cytoscape.exceptions import CyError
 from .cytoscape_utils import *
 
 
@@ -90,9 +91,18 @@ class Visualization:
         defaults = {
             'NODE_SHAPE': node_shape,
             'NODE_SIZE': node_size,
-            'NODE_FILL_COLOR': node_color
+            'NODE_FILL_COLOR': node_color,
+            'NODE_LABEL_FONT_SIZE': 12,
+            'NODE_LABEL_COLOR': '#1A1A1A',
         }
-        p4c.create_visual_style(self.style_name, defaults=defaults)
+        try:
+            p4c.create_visual_style(self.style_name, defaults=defaults)
+        except CyError:
+            p4c.update_style_defaults(self.style_name, defaults)
+
+        # Always remap labels so repeated runs keep names visible.
+        p4c.set_node_label_mapping('name', style_name=self.style_name)
+
         p4c.set_visual_style(self.style_name)
         p4c.set_edge_target_arrow_shape_mapping(
             'interaction_type',
@@ -123,7 +133,7 @@ class Visualization:
         -------
         None
         """
-        p4c.set_node_color_bypass(node_names, color)
+        p4c.set_node_color_bypass(node_names, color, network=self.network_suid)
 
     def hide_nodes(self, nodes):
         """

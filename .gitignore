@@ -8,3 +8,4 @@ logger.log
 **/__pycache__/
 .venv/
 logs/
+playground/
