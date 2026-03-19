@@ -242,13 +242,23 @@ def _bootstrap_matrices(
     boot_mecs: List[np.ndarray] = []
     boot_graphs: List[np.ndarray] = []
 
+    if progress:
+        print(
+            f"[confidence] Running {n_bootstraps} bootstraps "
+            f"for dataset '{dataset.dataset_name}' with {len(dataset.get_dataset())} rows."
+        )
+
     for b in range(n_bootstraps):
         if progress:
-            print(f"Bootstrap {b + 1}/{n_bootstraps}...")
+            print(f"[confidence] Bootstrap {b + 1}/{n_bootstraps}: sampling rows...")
         sampled_df = _bootstrap_sample(dataset.get_dataset(), rng, sample_frac)
         boot_dataset = _dataset_clone(dataset, sampled_df, suffix=str(b))
         boot_config = _config_for_dataset(cfg_dict, boot_dataset)
+        if progress:
+            print(f"[confidence] Bootstrap {b + 1}/{n_bootstraps}: calling model.run...")
         boot_mec_df, boot_graph_df, _ = model.run(boot_dataset, boot_config, prepare_data=True)
+        if progress:
+            print(f"[confidence] Bootstrap {b + 1}/{n_bootstraps}: model.run complete.")
         boot_mecs.append(boot_mec_df.to_numpy())
         boot_graphs.append(_to_numpy(boot_graph_df))
 
